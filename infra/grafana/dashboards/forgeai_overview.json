@@ -1,0 +1,88 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "targets": [
+        { "expr": "sum(rate(forgeai_gateway_requests_total[5m])) by (tenant_tier)", "refId": "A" }
+      ],
+      "title": "Request Rate by Tenant Tier",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(forgeai_gateway_request_duration_seconds_bucket[5m])) by (le, query_type))", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(forgeai_gateway_request_duration_seconds_bucket[5m])) by (le, query_type))", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(forgeai_gateway_request_duration_seconds_bucket[5m])) by (le, query_type))", "refId": "C" }
+      ],
+      "title": "Latency p50/p95/p99 by Query Type",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
+      "id": 3,
+      "targets": [
+        { "expr": "sum(rate(forgeai_gateway_requests_total[5m])) by (status_code)", "refId": "A" }
+      ],
+      "title": "Error Rate by Status Code",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
+      "id": 4,
+      "targets": [
+        { "expr": "sum(rate(forgeai_bandit_updates_total[5m])) by (action_key)", "refId": "A" }
+      ],
+      "title": "Active Model Actions in Use",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
+      "id": 5,
+      "targets": [
+        { "expr": "sum(rate(forgeai_retrieval_cache_hit_total[5m])) by (retrieval_mode) / clamp_min(sum(rate(forgeai_retrieval_request_duration_seconds_count[5m])) by (retrieval_mode), 1)", "refId": "A" }
+      ],
+      "title": "Cache Hit Rate Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "id": 6,
+      "targets": [
+        { "expr": "(sum(rate(forgeai_gateway_request_duration_seconds_count[5m])) - sum(rate(forgeai_gateway_request_duration_seconds_bucket{le=\"1\"}[5m]))) / clamp_min(sum(rate(forgeai_gateway_request_duration_seconds_count[5m])), 1)", "refId": "A" }
+      ],
+      "title": "SLO Violation Rate (Latency > 1s Proxy)",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": ["forgeai", "overview"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "title": "ForgeAI Overview",
+  "uid": "forgeai-overview",
+  "version": 1
+}

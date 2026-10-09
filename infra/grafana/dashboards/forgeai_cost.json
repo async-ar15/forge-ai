@@ -1,0 +1,75 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "targets": [
+        { "expr": "sum(rate(forgeai_request_cost_usd_sum[5m])) by (model_tier, precision) / clamp_min(sum(rate(forgeai_request_cost_usd_count[5m])) by (model_tier, precision), 1)", "refId": "A" }
+      ],
+      "title": "Cost Per Request by Model Tier + Precision",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "targets": [
+        { "expr": "sum(increase(forgeai_request_cost_usd_sum[1h]))", "refId": "A" }
+      ],
+      "title": "Total Cost Over Time (1h Increase)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
+      "id": 3,
+      "targets": [
+        { "expr": "1 - (sum(rate(forgeai_request_cost_usd_sum[5m])) / clamp_min(sum(rate(forgeai_request_cost_usd_count[5m])) * 0.02, 0.000001))", "refId": "A" }
+      ],
+      "title": "Cost Savings vs Always Large FP16 Baseline",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
+      "id": 4,
+      "targets": [
+        { "expr": "sum(rate(forgeai_request_cost_usd_count{cache_hit=\"true\"}[5m])) / clamp_min(sum(rate(forgeai_request_cost_usd_count[5m])), 1)", "refId": "A" }
+      ],
+      "title": "Cache Hit Savings Ratio",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
+      "id": 5,
+      "targets": [
+        { "expr": "sum(rate(forgeai_execution_tokens_per_second[5m])) / clamp_min(sum(rate(forgeai_request_cost_usd_sum[5m])), 0.000001)", "refId": "A" }
+      ],
+      "title": "Token Throughput per USD",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": ["forgeai", "cost"],
+  "templating": { "list": [] },
+  "time": { "from": "now-24h", "to": "now" },
+  "timezone": "browser",
+  "title": "ForgeAI Cost and Efficiency",
+  "uid": "forgeai-cost",
+  "version": 1
+}

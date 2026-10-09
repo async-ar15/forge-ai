@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forgeai-eval
+  namespace: forgeai
+  labels:
+    app: forgeai
+    component: eval
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: forgeai
+      component: eval
+  template:
+    metadata:
+      labels:
+        app: forgeai
+        component: eval
+        version: v1
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app: forgeai
+                    component: eval
+      containers:
+        - name: eval
+          image: forgeai/eval:v1
+          ports:
+            - containerPort: 8081
+          envFrom:
+            - configMapRef:
+                name: forgeai-config
+            - secretRef:
+                name: forgeai-secrets
+          resources:
+            requests:
+              cpu: 300m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: forgeai-eval
+  namespace: forgeai
+  labels:
+    app: forgeai
+    component: eval
+    version: v1
+spec:
+  type: ClusterIP
+  selector:
+    app: forgeai
+    component: eval
+  ports:
+    - name: http
+      port: 8081
+      targetPort: 8081
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: forgeai-eval
+  namespace: forgeai
+  labels:
+    app: forgeai
+    component: eval
+    version: v1
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: forgeai-eval
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70

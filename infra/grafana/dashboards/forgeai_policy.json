@@ -1,0 +1,86 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "targets": [
+        { "expr": "sum(rate(forgeai_bandit_updates_total[5m])) by (action_key)", "refId": "A" }
+      ],
+      "title": "Action Distribution Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "targets": [
+        { "expr": "sum(rate(forgeai_reward_value_sum[5m])) by (model_tier, precision, retrieval_mode) / clamp_min(sum(rate(forgeai_reward_value_count[5m])) by (model_tier, precision, retrieval_mode), 1)", "refId": "A" }
+      ],
+      "title": "Average Reward by Action Dimensions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
+      "id": 3,
+      "targets": [
+        { "expr": "sum(rate(forgeai_decisions_fallback_total[5m])) / clamp_min(sum(rate(forgeai_decisions_logged_total[5m])), 1)", "refId": "A" }
+      ],
+      "title": "Exploration/Fallback Pressure Proxy",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
+      "id": 4,
+      "targets": [
+        { "expr": "sum(rate(forgeai_decisions_logged_total[5m]))", "refId": "A" }
+      ],
+      "title": "Policy Throughput (Decisions Logged)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
+      "id": 5,
+      "targets": [
+        { "expr": "sum(rate(forgeai_feature_extraction_fallback_total[5m])) by (feature_name, reason)", "refId": "A" }
+      ],
+      "title": "Feature Extraction Fallback Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "id": 6,
+      "targets": [
+        { "expr": "sum(rate(forgeai_policy_rpc_duration_seconds_count[5m]))", "refId": "A" }
+      ],
+      "title": "Policy Version Change Monitor (RPC Volume Baseline)",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": ["forgeai", "policy"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "title": "ForgeAI Policy",
+  "uid": "forgeai-policy",
+  "version": 1
+}
