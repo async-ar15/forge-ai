@@ -1,0 +1,40 @@
+// EvalService: async RubricEval / offline judge pipeline (Section 2). Internal gRPC only.
+// Accepts immutable request correlation + model output text; schedules async scoring.
+
+syntax = "proto3";
+
+package forgeai.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/forgeai/forgeai/gen/go/forgeai/v1;forgeaiv1";
+
+// EvalService enqueues offline quality evaluation work.
+service EvalService {
+  // SubmitOfflineJudgeJob enqueues judge scoring for one completed request.
+  // Deadline / timeout: caller SHOULD use <=100ms; work is asynchronous after ACK.
+  rpc SubmitOfflineJudgeJob(EvalSubmitOfflineJudgeJobRequest)
+      returns (EvalSubmitOfflineJudgeJobResponse);
+}
+
+// EvalSubmitOfflineJudgeJobRequest: enqueue payload; not reused by other RPCs.
+message EvalSubmitOfflineJudgeJobRequest {
+  // Field 1 is frozen; never reuse. routing_decisions.request_id UUID string.
+  string correlation_request_id = 1;
+  // Field 2 is frozen; never reuse. Final model output text to judge (UTF-8).
+  string llm_response_text_utf8 = 2;
+  // Field 3 is frozen; never reuse. Optional explicit judge model identifier (registry or hub id).
+  optional string judge_model_identifier = 3;
+  // Field 4 is frozen; never reuse. Tenant UUID string for quota and routing of judge capacity.
+  string tenant_id = 4;
+  // Field 5 is frozen; never reuse. When the gateway completed streaming to the user (audit).
+  google.protobuf.Timestamp gateway_completion_timestamp_utc = 5;
+}
+
+// EvalSubmitOfflineJudgeJobResponse: ack with async job handle; not reused by other RPCs.
+message EvalSubmitOfflineJudgeJobResponse {
+  // Field 1 is frozen; never reuse. Opaque id for polling internal job status (not exposed on public API).
+  string async_eval_job_id = 1;
+  // Field 2 is frozen; never reuse. Server queue time hint in milliseconds (observability only).
+  int32 accepted_at_queue_depth_hint = 2;
+}

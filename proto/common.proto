@@ -1,0 +1,160 @@
+// forgeai.v1 — shared contracts for internal gRPC only (Section 2: no REST between services).
+// All cross-service enums and routing primitives live here; service protos import this file with
+// `import "common.proto";` and `protoc -Iproto` (include root is the repository `proto/` directory).
+
+syntax = "proto3";
+
+package forgeai.v1;
+
+option go_package = "github.com/forgeai/forgeai/gen/go/forgeai/v1;forgeaiv1";
+
+// -----------------------------------------------------------------------------
+// Enumerations (frozen value names align with Postgres CHECK constraints / Section 3)
+// -----------------------------------------------------------------------------
+
+// QueryType: client-supplied routing hint (Section 3). MUST NOT be inferred server-side in v1.
+enum QueryType {
+  // Field 0 is frozen for every enum; do not reassign.
+  QUERY_TYPE_UNSPECIFIED = 0;
+  QUERY_TYPE_RAG = 1;
+  QUERY_TYPE_CODE = 2;
+  QUERY_TYPE_CHAT = 3;
+  QUERY_TYPE_SUMMARIZE = 4;
+  QUERY_TYPE_UNKNOWN = 5;
+}
+
+// TenantTier: commercial tier used in routing state and static cache-hit fallbacks.
+enum TenantTier {
+  TENANT_TIER_UNSPECIFIED = 0;
+  TENANT_TIER_FREE = 1;
+  TENANT_TIER_PRO = 2;
+  TENANT_TIER_ENTERPRISE = 3;
+}
+
+// ModelTier: capacity class arm of the contextual bandit (Section 3 action space).
+enum ModelTier {
+  MODEL_TIER_UNSPECIFIED = 0;
+  MODEL_TIER_SMALL = 1;
+  MODEL_TIER_MEDIUM = 2;
+  MODEL_TIER_LARGE = 3;
+}
+
+// Precision: numeric precision tier for quantized execution (Section 3).
+enum Precision {
+  PRECISION_UNSPECIFIED = 0;
+  PRECISION_FP16 = 1;
+  PRECISION_INT8 = 2;
+  PRECISION_INT4 = 3;
+}
+
+// RetrievalMode: retrieval strategy arm (Section 3). Execution invokes retrieval when not OFF.
+enum RetrievalMode {
+  RETRIEVAL_MODE_UNSPECIFIED = 0;
+  RETRIEVAL_MODE_OFF = 1;
+  RETRIEVAL_MODE_CACHE_ONLY = 2;
+  RETRIEVAL_MODE_FULL = 3;
+}
+
+// OutputBudget: generation length class arm (Section 3).
+enum OutputBudget {
+  OUTPUT_BUDGET_UNSPECIFIED = 0;
+  OUTPUT_BUDGET_SHORT = 1;
+  OUTPUT_BUDGET_MEDIUM = 2;
+  OUTPUT_BUDGET_LONG = 3;
+}
+
+// ExplorationType: how the policy deviated from greedy scoring (PolicyService output). Typed contract only —
+// never use empty strings or ad-hoc literals for this signal.
+enum ExplorationType {
+  // Field 0 is frozen for every enum; do not reassign. Proto3 default only; producers SHOULD NOT emit this on success paths.
+  EXPLORATION_TYPE_UNSPECIFIED = 0;
+  // Field 1 is frozen; never reuse. Greedy / no exploration — MUST be set when exploration_flag is false.
+  EXPLORATION_TYPE_NONE = 1;
+  // Field 2 is frozen; never reuse. Epsilon (or similar) stochastic exploration.
+  EXPLORATION_TYPE_EPSILON = 2;
+  // Field 3 is frozen; never reuse. Upper-confidence / variance-driven exploration.
+  EXPLORATION_TYPE_UCB = 3;
+  // Field 4 is frozen; never reuse. Operator or safety forced non-greedy action.
+  EXPLORATION_TYPE_FORCED = 4;
+}
+
+// QuantizationMethod: post-training quantization family for quant_profiles (Section 4).
+enum QuantizationMethod {
+  QUANTIZATION_METHOD_UNSPECIFIED = 0;
+  QUANTIZATION_METHOD_AWQ = 1;
+  QUANTIZATION_METHOD_GPTQ = 2;
+  QUANTIZATION_METHOD_BNB = 3;
+  QUANTIZATION_METHOD_SLIDER_QUANT = 4;
+}
+
+// EvalRunCategory: eval_runs.eval_type (Section 4).
+enum EvalRunCategory {
+  EVAL_RUN_CATEGORY_UNSPECIFIED = 0;
+  EVAL_RUN_CATEGORY_RUBRIC = 1;
+  EVAL_RUN_CATEGORY_TASK_SUCCESS = 2;
+  EVAL_RUN_CATEGORY_LATENCY = 3;
+  EVAL_RUN_CATEGORY_COST = 4;
+}
+
+// ServingEnvironment: deployments.environment (Section 4).
+enum ServingEnvironment {
+  SERVING_ENVIRONMENT_UNSPECIFIED = 0;
+  SERVING_ENVIRONMENT_STAGING = 1;
+  SERVING_ENVIRONMENT_PRODUCTION = 2;
+}
+
+// ServingDeploymentLifecycleState: deployments.status (Section 4).
+enum ServingDeploymentLifecycleState {
+  SERVING_DEPLOYMENT_LIFECYCLE_STATE_UNSPECIFIED = 0;
+  SERVING_DEPLOYMENT_LIFECYCLE_STATE_PENDING = 1;
+  SERVING_DEPLOYMENT_LIFECYCLE_STATE_ACTIVE = 2;
+  SERVING_DEPLOYMENT_LIFECYCLE_STATE_DRAINING = 3;
+  SERVING_DEPLOYMENT_LIFECYCLE_STATE_RETIRED = 4;
+}
+
+// -----------------------------------------------------------------------------
+// Routing state and action (Section 3 — pre-execution features only)
+// -----------------------------------------------------------------------------
+
+// StateVector: eight features available before model execution; MUST NOT include post-retrieval
+// or post-generation signals (architecture lock). All latency budgets use *_ms naming.
+message StateVector {
+  // Field 1 is frozen; never reuse.
+  int32 query_len = 1;
+  // Field 2 is frozen; never reuse.
+  int32 token_budget = 2;
+  // Field 3 is frozen; never reuse.
+  QueryType query_type = 3;
+  // Field 4 is frozen; never reuse.
+  TenantTier tenant_tier = 4;
+  // Field 5 is frozen; never reuse. Client deadline for the request in milliseconds.
+  int32 latency_slo_ms = 5;
+  // Field 6 is frozen; never reuse. Execution queue depth observed at decision time.
+  int32 queue_depth = 6;
+  // Field 7 is frozen; never reuse. GPU utilization in [0.0, 1.0]; not a monetary value.
+  double gpu_load = 7;
+  // Field 8 is frozen; never reuse. Estimated cache hit probability [0.0, 1.0]; not monetary.
+  double cache_hit_prob = 8;
+}
+
+// ActionSpec: joint routing action — all four bandit dimensions MUST be set together (Section 3).
+message ActionSpec {
+  // Field 1 is frozen; never reuse.
+  ModelTier model_tier = 1;
+  // Field 2 is frozen; never reuse.
+  Precision precision = 2;
+  // Field 3 is frozen; never reuse.
+  RetrievalMode retrieval_mode = 3;
+  // Field 4 is frozen; never reuse.
+  OutputBudget output_budget = 4;
+}
+
+// -----------------------------------------------------------------------------
+// Money and time primitives for internal services
+// -----------------------------------------------------------------------------
+
+// Microdollars: USD scaled by 1e6 (integer only on the wire — no float currency).
+message MoneyMicrodollars {
+  // Field 1 is frozen; never reuse. Signed microdollars; negative values forbidden for prices.
+  int64 amount_microdollars = 1;
+}

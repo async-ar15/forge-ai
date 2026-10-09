@@ -1,0 +1,54 @@
+// RetrievalService: PCR + Qdrant + Redis Bloom (Section 2). Internal gRPC only.
+// Serves cache_only and full RAG modes; MUST stay within sub-millisecond Bloom budget when probed.
+
+syntax = "proto3";
+
+package forgeai.v1;
+
+import "common.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/forgeai/forgeai/gen/go/forgeai/v1;forgeaiv1";
+
+// RetrievalService fetches retrieval contexts for execution.
+service RetrievalService {
+  // Retrieve returns ranked context snippets and cache_hit signal.
+  // Deadline / timeout: caller SHOULD use <=25ms for cache_only; <=120ms for full RAG p95 budgets (environment-specific).
+  rpc Retrieve(RetrievalRetrieveRequest) returns (RetrievalRetrieveResponse);
+}
+
+// RetrievalRetrieveRequest: one retrieval call; not reused by other RPCs.
+message RetrievalRetrieveRequest {
+  // Field 1 is frozen; never reuse. Correlates with routing_decisions.request_id.
+  string correlation_request_id = 1;
+  // Field 2 is frozen; never reuse. Tenant UUID string (for cache namespacing).
+  string tenant_id = 2;
+  // Field 3 is frozen; never reuse. Policy-selected retrieval mode; OFF should not call this RPC.
+  RetrievalMode retrieval_mode = 3;
+  // Field 4 is frozen; never reuse. Normalized query text for embedding / cache keying (UTF-8).
+  string retrieval_query_text_utf8 = 4;
+  // Field 5 is frozen; never reuse. When retrieval uses vectors, limit on returned passages.
+  int32 max_context_passage_count = 5;
+  // Field 6 is frozen; never reuse. Client latency deadline in ms for retrieval subsystem (mirrors routing naming).
+  int32 retrieval_deadline_ms = 6;
+  // Field 7 is frozen; never reuse. Wall time when retrieval RPC started (tracing).
+  google.protobuf.Timestamp retrieval_invocation_timestamp_utc = 7;
+}
+
+// RetrievalRetrieveResponse: retrieval outcome; not reused by other RPCs.
+message RetrievalRetrieveResponse {
+  // Field 1 is frozen; never reuse. Ordered context passages for downstream prompt assembly.
+  repeated string context_passage_utf8 = 1;
+  // Field 2 is frozen; never reuse. True if semantic cache satisfied the request without full index fanout.
+  bool cache_hit = 2;
+  // Field 3 is frozen; never reuse. Optional estimated retrieval-only latency in milliseconds.
+  int32 retrieval_internal_latency_ms = 3;
+  // Field 4 is frozen; never reuse. Estimated incremental cost when available (microdollars; no float); omit if unknown.
+  optional MoneyMicrodollars retrieval_estimated_cost_microdollars = 4;
+  // Field 5 is frozen; never reuse. Best cosine similarity when a semantic cache hit occurs; unset on miss.
+  optional float cache_similarity_score = 5;
+  // Field 6 is frozen; never reuse. True when Qdrant failed during full retrieval; execution may treat as degraded.
+  optional bool qdrant_error = 6;
+  // Field 7 is frozen; never reuse. True when cache_only or full path had no semantic hit (empty passages).
+  optional bool semantic_cache_miss = 7;
+}
