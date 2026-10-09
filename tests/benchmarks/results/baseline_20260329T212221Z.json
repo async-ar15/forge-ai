@@ -1,0 +1,19 @@
+{
+  "scenario_name": "baseline",
+  "n_requests": 500,
+  "concurrency": 20,
+  "p50_latency_ms": 222.6243619529127,
+  "p95_latency_ms": 247.65944184786107,
+  "p99_latency_ms": 249.19163925510614,
+  "throughput_rps": 500000.0,
+  "cache_hit_rate": 0.0,
+  "avg_cost_usd": 0.012,
+  "total_cost_usd": 5.999999999999931,
+  "slo_violation_rate": 0.0,
+  "action_distribution": {
+    "large|fp16|full|medium": 500
+  },
+  "errors": 0,
+  "started_at": "2026-03-29T21:22:21.930490+00:00",
+  "duration_seconds": 0.001
+}

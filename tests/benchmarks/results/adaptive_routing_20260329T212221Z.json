@@ -1,0 +1,20 @@
+{
+  "scenario_name": "adaptive_routing",
+  "n_requests": 1000,
+  "concurrency": 20,
+  "p50_latency_ms": 148.17542340795072,
+  "p95_latency_ms": 181.0629041424319,
+  "p99_latency_ms": 183.81132160207943,
+  "throughput_rps": 1000000.0,
+  "cache_hit_rate": 0.072,
+  "avg_cost_usd": 0.003248,
+  "total_cost_usd": 3.2479999999999514,
+  "slo_violation_rate": 0.0,
+  "action_distribution": {
+    "medium|int8|cache_only|medium": 791,
+    "large|int8|full|medium": 209
+  },
+  "errors": 0,
+  "started_at": "2026-03-29T21:22:21.931521+00:00",
+  "duration_seconds": 0.001
+}
