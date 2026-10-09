@@ -1,0 +1,9 @@
+# Owns: Helm-rendered Namespace resource for ForgeAI workloads.
+# Does not own: multi-tenant isolation policies or pod security admission configuration.
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/managed-by: Helm

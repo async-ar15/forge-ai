@@ -1,0 +1,9 @@
+# Owns: Helm chart metadata for packaging ForgeAI Kubernetes resources.
+# Does not own: image build pipelines, OCI registry authentication, or Argo CD apps.
+
+apiVersion: v2
+name: forgeai
+description: ForgeAI platform Helm chart (scaffold).
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

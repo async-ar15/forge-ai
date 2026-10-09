@@ -1,0 +1,9 @@
+# Owns: baseline Kubernetes Namespace for ForgeAI components (raw manifests path).
+# Does not own: Helm release lifecycle, cloud-provisioned VPCs, or cert-manager Issuers.
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: forgeai
+  labels:
+    app.kubernetes.io/name: forgeai

@@ -1,0 +1,18 @@
+# Owns: default Helm values for the ForgeAI chart scaffold.
+# Does not own: per-environment overrides stored in sealed secrets or external GitOps repos.
+
+namespace: forgeai
+
+gateway:
+  replicaCount: 1
+  image:
+    repository: forgeai/gateway
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+
+policy:
+  replicaCount: 1
+  image:
+    repository: forgeai/policy
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
