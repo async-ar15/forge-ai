@@ -1,4 +1,4 @@
-# ForgeAI ⚡
+# ForgeAI
 
 > **A drop-in OpenAI-compatible router that cuts inference costs by up to 72.9% by jointly optimizing model, precision, and retrieval as a single contextual bandit decision.**
 
@@ -6,7 +6,7 @@
 
 ![](docs/screenshots/forgeai-benchmark-results.png)
 
-## 🚀 The Core Problem: Fixed Routing
+## The Core Problem: Fixed Routing
 Routers like LiteLLM and OpenRouter operate using **Fixed Routing**. When a request arrives, they select a model (e.g., GPT-4 vs. Claude 3) but leave quantization precision and retrieval strategy fixed. 
 
 **ForgeAI** treats routing as a **Joint Optimization** problem. Using a LinUCB Contextual Bandit, ForgeAI analyzes 8 pre-execution features (like queue depth, GPU load, token budget) to select one of 81 combinations of:
@@ -25,7 +25,7 @@ Routers like LiteLLM and OpenRouter operate using **Fixed Routing**. When a requ
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ForgeAI operates as a high-performance, microservice-based architecture communicating internally via **gRPC** and **Protocol Buffers**.
 
@@ -59,7 +59,7 @@ flowchart TD
 
 ---
 
-## 💻 Quick Start: Drop-in Replacement
+## Quick Start: Drop-in Replacement
 
 ForgeAI maintains 100% compatibility with the OpenAI SDK. No application code changes are required.
 
@@ -93,7 +93,7 @@ x-forgeai-latency: 112ms
 
 ---
 
-## 🛠️ Full Local Setup
+## Full Local Setup
 
 Prerequisites: **Docker**, **Python 3.11+**, **uv**
 
@@ -128,7 +128,7 @@ make demo
 
 ---
 
-## 📚 Core Components
+## Core Components
 
 - **API Gateway (FastAPI)**: HTTP entrypoint that extracts 8 pre-execution features (e.g., `query_len`, `tenant_tier`, `latency_slo_ms`).
 - **Policy Engine (LinUCB)**: The reinforcement learning brain that dynamically maps the feature vector to the cheapest valid 81-arm joint action.
@@ -138,7 +138,7 @@ make demo
 
 ---
 
-## 🗺️ Roadmap (v2 Features)
+## Roadmap (v2 Features)
 
 While the core router is highly stable, several advanced features are planned for v2:
 - **ElephantBroker Runtime**: Full agentic long-term memory and safety hook injection.
@@ -148,7 +148,7 @@ While the core router is highly stable, several advanced features are planned fo
 
 ---
 
-## 🔬 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -165,7 +165,7 @@ While the core router is highly stable, several advanced features are planned fo
 
 ---
 
-## 📖 Research Foundation
+## Research Foundation
 
 ForgeAI's architecture is based on cutting-edge ML systems research:
 - Training service: Legal — Auto-Scaling Large Model Training
