@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForgeAI - Retrieval & Cache</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700&display=swap" rel="stylesheet">
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ 
+          startOnLoad: true, 
+          theme: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'base',
+          themeVariables: { fontFamily: 'Inter Tight, sans-serif' }
+      });
+    </script>
+</head>
+<body>
+    <nav>
+        <ul class="nav-links">
+            <li><a href="index.html">Overview</a></li>
+            <li><a href="architecture.html">Architecture</a></li>
+            <li><a href="policy.html">Policy Engine</a></li>
+            <li><a href="retrieval.html" class="active">Retrieval & Cache</a></li>
+            <li><a href="execution.html">Execution Engine</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <header class="animate-up">
+            <h1>Retrieval & Cache</h1>
+            <p class="subtitle">Semantic Caching and RAG Orchestration</p>
+        </header>
+
+        <section class="animate-up delay-1">
+            <h2>Hybrid Retrieval Strategy</h2>
+            <p>To aggressively cut costs, ForgeAI tries to avoid running a full LLM inference whenever possible. It does this by leveraging a tiered retrieval system backed by <strong>Redis</strong> (Semantic Caching) and <strong>Qdrant</strong> (Vector Database).</p>
+        </section>
+
+        <section class="animate-up delay-2">
+            <h2>The Retrieval Flow</h2>
+            
+            <div class="mermaid">
+            sequenceDiagram
+                participant Gateway
+                participant Policy
+                participant Redis as Redis (Bloom + Cache)
+                participant Qdrant as Qdrant (Vector DB)
+                participant LLM as Execution Engine
+
+                Gateway->>Policy: Request (Extracts cache_hit_prob from Bloom Filter)
+                Policy->>Gateway: Action (e.g. CACHE_ONLY)
+                
+                Gateway->>Redis: Check exact / semantic match
+                alt Cache Hit
+                    Redis-->>Gateway: Return cached response (0 inference cost)
+                else Cache Miss
+                    Gateway->>Qdrant: Fetch context chunks (RAG)
+                    Qdrant-->>Gateway: Return context
+                    Gateway->>LLM: Execute with Context
+                    LLM-->>Gateway: Return generated response
+                    Gateway->>Redis: Store response in Semantic Cache
+                end
+            </div>
+        </section>
+
+        <section class="animate-up delay-3">
+            <h2>Retrieval Modes</h2>
+            <p>The Policy Engine dynamically selects the retrieval mode per request:</p>
+            <ul>
+                <li><strong>OFF:</strong> No retrieval is performed. Useful for simple tasks like "Write a python script".</li>
+                <li><strong>CACHE_ONLY:</strong> Only checks Redis. Prevents expensive Vector DB lookups if the request is highly likely to be cached.</li>
+                <li><strong>FULL:</strong> Executes a full RAG pipeline, querying Qdrant for document context before sending the prompt to the Execution Engine.</li>
+            </ul>
+        </section>
+    </main>
+</body>
+</html>

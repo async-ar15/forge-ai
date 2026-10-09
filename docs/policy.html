@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForgeAI - Policy Engine</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700&display=swap" rel="stylesheet">
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ 
+          startOnLoad: true, 
+          theme: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'base',
+          themeVariables: { fontFamily: 'Inter Tight, sans-serif' }
+      });
+    </script>
+</head>
+<body>
+    <nav>
+        <ul class="nav-links">
+            <li><a href="index.html">Overview</a></li>
+            <li><a href="architecture.html">Architecture</a></li>
+            <li><a href="policy.html" class="active">Policy Engine</a></li>
+            <li><a href="retrieval.html">Retrieval & Cache</a></li>
+            <li><a href="execution.html">Execution Engine</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <header class="animate-up">
+            <h1>Policy Engine</h1>
+            <p class="subtitle">Contextual Bandit Routing with LinUCB</p>
+        </header>
+
+        <section class="animate-up delay-1">
+            <h2>The Brain of ForgeAI</h2>
+            <p>The Policy Engine uses a Reinforcement Learning algorithm called <strong>LinUCB</strong> (Linear Upper Confidence Bound). Instead of hardcoding rules, the system learns over time which combination of settings yields the best latency and cost for a given type of request.</p>
+        </section>
+
+        <section class="animate-up delay-2">
+            <h2>State Vector (Pre-Execution Features)</h2>
+            <p>Before any model is invoked, the gateway extracts an 8-dimensional state vector from the incoming request in under 5ms:</p>
+            <ul>
+                <li><code>query_len</code>: Token count of the input prompt.</li>
+                <li><code>token_budget</code>: The requested max output tokens.</li>
+                <li><code>query_type</code>: RAG, Code, Chat, Summarize, or Unknown.</li>
+                <li><code>tenant_tier</code>: Free, Pro, Enterprise, or Internal.</li>
+                <li><code>latency_slo_ms</code>: The Service Level Objective for latency.</li>
+                <li><code>queue_depth</code>: Current load on the execution queue.</li>
+                <li><code>gpu_load</code>: Live GPU utilization metrics.</li>
+                <li><code>cache_hit_prob</code>: Probability of a semantic cache hit (queried via Redis Bloom).</li>
+            </ul>
+        </section>
+
+        <section class="animate-up delay-3">
+            <h2>The 81 Joint Actions</h2>
+            <p>Based on the state vector, the bandit chooses one of <strong>81</strong> possible joint actions. An action is a combination of four discrete variables:</p>
+            
+            <div class="mermaid">
+            graph LR
+                A[Model Tier] -->|Small, Medium, Large| B[Precision]
+                B -->|FP16, INT8, INT4| C[Retrieval Mode]
+                C -->|Off, Cache-Only, Full| D[Output Budget]
+                D -->|Short, Medium, Long| E((Action Selected))
+            </div>
+
+            <p>Every decision is logged to Kafka with an exploration flag. The online reward is computed synchronously before returning the response to the user, and the policy is retrained on exploitative history offline.</p>
+        </section>
+    </main>
+</body>
+</html>

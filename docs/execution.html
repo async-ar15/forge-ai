@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForgeAI - Execution Engine</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700&display=swap" rel="stylesheet">
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ 
+          startOnLoad: true, 
+          theme: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'base',
+          themeVariables: { fontFamily: 'Inter Tight, sans-serif' }
+      });
+    </script>
+</head>
+<body>
+    <nav>
+        <ul class="nav-links">
+            <li><a href="index.html">Overview</a></li>
+            <li><a href="architecture.html">Architecture</a></li>
+            <li><a href="policy.html">Policy Engine</a></li>
+            <li><a href="retrieval.html">Retrieval & Cache</a></li>
+            <li><a href="execution.html" class="active">Execution Engine</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <header class="animate-up">
+            <h1>Execution Engine</h1>
+            <p class="subtitle">High-Performance Inference and Execution</p>
+        </header>
+
+        <section class="animate-up delay-1">
+            <h2>Model Inference</h2>
+            <p>The Execution Engine is responsible for the heavy lifting: running the actual LLM inference. It leverages <strong>vLLM</strong> to provide extremely high throughput and low latency, backed by CUDA and PyTorch.</p>
+        </section>
+
+        <section class="animate-up delay-2">
+            <h2>Dynamic Precision & Tiering</h2>
+            
+            <div class="mermaid">
+            graph TD
+                A[Execution Request] --> B{Model Tier}
+                B -->|Small| C[Phi-2]
+                B -->|Medium| D[Mistral-7B]
+                B -->|Large| E[Llama-3-70B]
+
+                C --> F{Precision}
+                D --> F
+                E --> F
+
+                F -->|FP16| G[Full Precision vLLM]
+                F -->|INT8| H[Quantized Engine]
+                F -->|INT4| I[Highly Compressed Engine]
+            </div>
+        </section>
+
+        <section class="animate-up delay-3">
+            <h2>Cost Tracking & Headers</h2>
+            <p>Once execution is complete, the engine calculates the precise cost of the inference based on the model tier and precision used. This data is injected directly into the response headers, so developers have full visibility into cost optimization.</p>
+            <ul>
+                <li><code>x-forgeai-model</code>: The routed model tier.</li>
+                <li><code>x-forgeai-precision</code>: The quantization level.</li>
+                <li><code>x-forgeai-cost</code>: Micro-cent level cost tracking.</li>
+                <li><code>x-forgeai-latency</code>: Total turnaround time.</li>
+            </ul>
+        </section>
+    </main>
+</body>
+</html>

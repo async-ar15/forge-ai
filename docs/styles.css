@@ -1,0 +1,136 @@
+:root {
+  --bg-base: #fafafa;
+  --bg-surface: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --border-color: #e5e7eb;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-base: #0f172a;
+    --bg-surface: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent: #38bdf8;
+    --accent-hover: #7dd3fc;
+    --border-color: #334155;
+  }
+}
+
+body {
+  font-family: 'Inter Tight', 'Inter', sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+nav {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  justify-content: center;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover, .nav-links a.active {
+  color: var(--accent);
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+}
+
+h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: 1.8rem;
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+  color: var(--accent);
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  margin-bottom: 3rem;
+}
+
+p, ul {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-secondary);
+}
+
+li {
+  margin-bottom: 0.5rem;
+}
+
+strong {
+  color: var(--text-primary);
+}
+
+code {
+  background-color: var(--bg-surface);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.mermaid {
+  background: var(--bg-surface);
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  margin: 2rem 0;
+  display: flex;
+  justify-content: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.animate-up {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeUp 0.6s ease forwards;
+}
+
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

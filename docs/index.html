@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForgeAI - Overview</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700&display=swap" rel="stylesheet">
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ 
+          startOnLoad: true, 
+          theme: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'base',
+          themeVariables: { fontFamily: 'Inter Tight, sans-serif' }
+      });
+    </script>
+</head>
+<body>
+    <nav>
+        <ul class="nav-links">
+            <li><a href="index.html" class="active">Overview</a></li>
+            <li><a href="architecture.html">Architecture</a></li>
+            <li><a href="policy.html">Policy Engine</a></li>
+            <li><a href="retrieval.html">Retrieval & Cache</a></li>
+            <li><a href="execution.html">Execution Engine</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <header class="animate-up">
+            <h1>ForgeAI</h1>
+            <p class="subtitle">Drop-in OpenAI-compatible router that cuts inference cost by up to 72.9%</p>
+        </header>
+
+        <section class="animate-up delay-1">
+            <h2>The Challenge: Fixed Routing</h2>
+            <p>Traditional routers like LiteLLM and OpenRouter operate on <strong>Fixed Routing</strong>. When a user request comes in, they only pick a model. But model selection is only one lever of inference optimization.</p>
+            <p>ForgeAI solves this by treating inference routing as a <strong>Joint Optimization</strong> problem across model, precision, and retrieval.</p>
+        </section>
+
+        <section class="animate-up delay-2">
+            <h2>System Overview</h2>
+            <p>By simply pointing your OpenAI SDK to ForgeAI, the API Gateway intercepts the request and offloads it to a Contextual Bandit which makes a joint decision.</p>
+            
+            <div class="mermaid">
+            flowchart TD
+                User((User App)) --> |OpenAI SDK| Gateway[Inference Gateway]
+                Gateway --> |1. Get Models| Registry[(Model Registry)]
+                Gateway --> |2. Ask Bandit| Policy[Policy Engine]
+                Policy -.-> |LinUCB Action| Gateway
+                Gateway --> |3. Execute| Execution[Execution Engine]
+                Execution <--> |Fetch Context| Retrieval[Retrieval Engine]
+                Execution --> |Stream Response| User
+                Gateway --> |4. Log Reward| Kafka{Kafka}
+            </div>
+        </section>
+
+        <section class="animate-up delay-3">
+            <h2>Key Capabilities</h2>
+            <ul>
+                <li><strong>Drop-in OpenAI-compatible API:</strong> Change one line, same SDK, same response shape.</li>
+                <li><strong>Contextual Bandit Policy:</strong> Uses LinUCB to select one of 81 joint actions based on 8 live features.</li>
+                <li><strong>Massive Savings:</strong> Achieves up to 72.9% lower cost on real H100 benchmarks.</li>
+                <li><strong>Offline Retraining:</strong> Decisions are logged asynchronously and policies are retrained on actual cost/latency outcomes.</li>
+            </ul>
+        </section>
+    </main>
+</body>
+</html>
